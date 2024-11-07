@@ -3,8 +3,13 @@ import { passwordHasher } from "../utils/passwordHasher.util.js";
 
 const UserSchema = new Schema(
   {
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    email: {
+      type: String,
+      required: true,
+      unique: [true, "Email already exist!"],
+    },
     password: { type: String, required: true },
     isEmailVerified: { type: Boolean, default: false }, // Track email verification status
     isPhoneVerified: { type: Boolean, default: false }, // Track phone verification status
@@ -28,9 +33,6 @@ const UserSchema = new Schema(
 
 UserSchema.pre("save", async function (next) {
   try {
-    // console.log(this.isNew);
-    // console.log(this.isModified(this.password));
-    // console.log(this._isNew || this.isModified(this.password));
     if (this.isNew || this.isModified(this.password)) {
       this.password = await passwordHasher(this.password);
     }

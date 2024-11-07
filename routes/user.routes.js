@@ -1,8 +1,17 @@
 import express from "express";
-import { profile } from "../controllers/user.controller.js";
+import {
+  getProfile,
+  updateProfile,
+  deleteProfile,
+} from "../controllers/user.controller.js";
+import { authenticator } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/profile", profile);
+router
+  .route("/profile")
+  .get(authenticator, getProfile)
+  .put(authenticator, updateProfile)
+  .delete(authenticator, deleteProfile);
 
 export default router;
