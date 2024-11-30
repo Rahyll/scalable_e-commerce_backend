@@ -9,7 +9,7 @@ export const loginSchema = {
   }),
 };
 
-export const signupSchema = {
+export const registerSchema = {
   body: Joi.object({
     firstName: Joi.string()
       .min(3)
@@ -17,7 +17,10 @@ export const signupSchema = {
       .pattern(/[A-Za-z]/)
       .required(),
     lastName: Joi.string().min(3).max(10).required(),
-    phoneNumber: Joi.string().length(10).required(),
+    countryCode: Joi.string()
+      .pattern(/^\+[1-9]{1}[0-9]{1,3}$/)
+      .required(),
+    phone: Joi.string().length(10).required(),
     email: Joi.string().email().required(),
     password: Joi.string()
       .pattern(/^[a-zA-Z0-9-@_]{8,20}$/)
