@@ -27,8 +27,8 @@ router
   .get(validator(getAllProductsSchema), getAllProducts) // Get all products
   .post(
     authenticator,
-    upload("5MB", ["jpeg", "png", "jpg", "gif"]).single("file"),
-    processImage,
+    upload("5MB", ["jpeg", "png", "jpg", "gif"]).any(),
+    // processImage,
     validator(addProductSchema),
     asyncWrapper(addProduct)
   ); // Add a new product

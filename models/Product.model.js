@@ -4,9 +4,8 @@ import mongoose, { Schema } from "mongoose";
 const productSchema = new Schema(
   {
     name: { type: String, required: true },
-    slug: { type: String, required: true, unique: true, lowercase: true },
     description: { type: String, required: true },
-    slug: { type: String, required: true, unique: true, lowercase: true },
+    slug: { type: String, unique: true, lowercase: true },
     price: { type: Number, required: true },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     tags: [{ type: String, trim: true }],
@@ -16,10 +15,10 @@ const productSchema = new Schema(
         thumbnailUrl: { type: String },
         fileSize: { type: Number }, // File size in bytes
         fileType: { type: String }, // MIME type
-        dimensions: {
-          width: { type: Number },
-          height: { type: Number },
-        },
+        // dimensions: {
+        //   width: { type: Number },
+        //   height: { type: Number },
+        // },
       },
     ],
     stockQuantity: { type: Number, default: 0 },
@@ -32,9 +31,9 @@ const productSchema = new Schema(
 );
 
 productSchema.pre("save", function (next) {
-  if (this.isModified("name")) {
+  if (this.isModified("name") && this.name) {
     // Generate slug
-    const slug = slugify(name, { lower: true, strict: true });
+    this.slug = slugify(this.name, { lower: true, strict: true });
   }
   next();
 });
