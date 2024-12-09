@@ -55,15 +55,17 @@ const getProductById = async (req, res) => {
 
 // Create a new product
 const addProduct = async (req, res) => {
-  const { name, description, price, category, stockQuantity, images } =
-    req.body;
-
+  const { name, description, price, category, stockQuantity } = req.body;
+  let images = [];
   //
-  const existingCategory = await CategoryModel.findOne({ name: category });
+  const existingCategory = await CategoryModel.findById(category);
   if (!existingCategory) {
     throw new NotFoundError("Category not found");
   }
 
+  if (req.thumbnails) {
+    images = req.thumbnails;
+  }
   // Create a new product document
   const product = new ProductModel({
     name,
@@ -72,7 +74,7 @@ const addProduct = async (req, res) => {
     category,
     stockQuantity,
     images,
-    createdBy: req.user.id,
+    createdBy: req.user.userId,
   });
 
   // Save the product to the database
