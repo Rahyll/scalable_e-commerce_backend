@@ -34,10 +34,9 @@ const parseFileSize = (size) => {
 };
 
 const upload = (fileSize, fileTypes) => {
-  const ALLOWED_FILE_TYPES = new RegExp(fileTypes.join("|")); // Converts array of types to regex
   const maxSize = parseFileSize(fileSize);
-
   const fileFilter = (req, file, cb) => {
+    const ALLOWED_FILE_TYPES = new RegExp(fileTypes.join("|")); // Converts array of types to regex
     const isFileTypeValid = ALLOWED_FILE_TYPES.test(
       path.extname(file.originalname).toLowerCase()
     );
@@ -54,12 +53,51 @@ const upload = (fileSize, fileTypes) => {
       );
     }
   };
-
   return multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: maxSize },
     fileFilter,
+    onError: (err, next) => {
+      console.log("Inside Error");
+      if (err.code === "LIMIT_FILE_SIZE") {
+        const error = new ValidationError(
+          `File size exceeds the ${fileSize} limit.`
+        );
+        next(error);
+      } else {
+        next(err); // Pass any other error to the next error handler
+      }
+    },
   });
 };
+// const upload = (fileType) => {
+//   console.log(fileType);
+//   const fileFilter = (req, file, cb) => {
+//     const ALLOWED_FILE_TYPES = new RegExp(
+//       ["jpeg", "png", "jpg", "gif"].join("|")
+//     );
+//     const isFileTypeValid = ALLOWED_FILE_TYPES.test(
+//       path.extname(file.originalname).toLowerCase()
+//     );
+//     const isMimeTypeValid = ALLOWED_FILE_TYPES.test(file.mimetype);
+
+//     if (isFileTypeValid && isMimeTypeValid) {
+//       cb(null, true);
+//     } else {
+//       cb(
+//         new ValidationError(
+//           `Only files with (${fileTypes.join(",")}) are allowed!`
+//         ),
+//         false
+//       );
+//     }
+//   };
+//   const maxSize = parseFileSize("5MB");
+//   return multer({
+//     storage: multer.memoryStorage(),
+//     limits: { fileSize: maxSize },
+//     fileFilter,
+//   });
+// };
 
 export default upload;

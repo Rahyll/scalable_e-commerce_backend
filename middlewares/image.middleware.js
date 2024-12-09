@@ -6,11 +6,13 @@ const processImage = async (req, res, next) => {
     if (!(req.files || req.file)) {
       next();
     }
-    if(req.file){
-      req.thumbnail = await thumbnailGenerator(req.file)
+    if (req.file) {
+      req.thumbnail = await thumbnailGenerator(req.file);
     }
-    if(req.files){
-      req.thumbnails = await Promise.allSettled(req.files.map(file=> thumbnailGenerator(file)))
+    if (req.files) {
+      req.thumbnails = await Promise.all(
+        req.files.map((file) => thumbnailGenerator(file))
+      );
     }
     next();
   } catch (err) {
@@ -23,9 +25,9 @@ const processImage = async (req, res, next) => {
   }
 };
 
-const thumbnailGenerator = async(file) => {
+const thumbnailGenerator = async (file) => {
   const originalFileName = sanitizeFileName(file.originalname);
-  const thumbnailFileName = sanitizeFileName(file.originalname,'thumbnail');
+  const thumbnailFileName = sanitizeFileName(file.originalname, "thumbnail");
 
   // Resize for Thumbnail
   const thumbnailBuffer = await sharp(file.buffer)
@@ -34,19 +36,27 @@ const thumbnailGenerator = async(file) => {
     .toBuffer();
 
   // Upload Original and Thumbnail
-  const [originalUrl, thumbnailUrl] = await Promise.all([
-    await s3Upload(file.buffer, originalFileName, "users/original"),
-    await s3Upload(thumbnailBuffer, thumbnailFileName, "users/thumbnail"),
+  const [imageData, thumbnailData] = await Promise.all([
+    await s3Upload(
+      file.buffer,
+      originalFileName,
+      "ecommerce-product-media/original"
+    ),
+    await s3Upload(
+      thumbnailBuffer,
+      thumbnailFileName,
+      "ecommerce-product-media/thumbnail"
+    ),
   ]);
 
   // Return processed image data to the request object
   return {
-    originalUrl,
-    thumbnailUrl,
+    originalUrl: imageData.Location,
+    thumbnailUrl: thumbnailData.Location,
     fileSize: file.size,
     fileType: file.mimetype,
-    dimensions: await sharp(file.buffer).metadata(),
+    // dimensions: await sharp(file.buffer).metadata(),
   };
-}
+};
 
 export default processImage;
